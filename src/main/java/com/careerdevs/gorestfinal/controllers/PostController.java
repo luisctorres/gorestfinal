@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/posts")
@@ -34,7 +36,6 @@ public class PostController {
         public ResponseEntity<?> createPost (@RequestBody Post newPost) {
 
                 try {
-
                         ValidationError errors = PostValidation.validatePost(newPost, postRepository, Boolean.FALSE);
                         if (errors.hasError()) {
                                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, errors.toJSONString());
@@ -47,6 +48,27 @@ public class PostController {
                 } catch (Exception e) {
                         return ApiErrorHandling.genericApiError(e);
                 }
+
+        }
+
+        @PutMapping("/{id}")
+        public ResponseEntity<?>
+        updatePost(@RequestBody Post updatePost,
+                         @PathVariable(value = "id") long postId, )
+        {
+                try {
+                        Post post = postRepository.findById(postId);
+
+                        post.setTitle();
+                        post.setBody();
+                        return new ResponseEntity<>(updatePost, HttpStatus.OK);
+
+                } catch (HttpClientErrorException e) {
+                        return ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode());
+                } catch (Exception e) {
+                        return ApiErrorHandling.genericApiError(e);
+                }
+
 
 
 

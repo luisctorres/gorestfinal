@@ -1,21 +1,20 @@
 package com.careerdevs.gorestfinal.models;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Post {
 
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    private int id;
+    private long id;
     private String title;
+
+    @Column(length = 512)
     private String body;
 
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -25,6 +24,14 @@ public class Post {
 
     public String getBody() {
         return body;
+    }
+
+    public void setTitle() {
+        this.title = title;
+    }
+
+    public void setBody() {
+        this.body = body;
     }
 
     @Override
