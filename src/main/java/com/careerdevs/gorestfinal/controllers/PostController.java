@@ -52,23 +52,28 @@ public class PostController {
         }
 
         @PutMapping("/{id}")
-        public ResponseEntity<?>
+        public Optional<Post>
         updatePost(@RequestBody Post updatePost,
-                         @PathVariable(value = "id") long postId, )
+                         @PathVariable(value = "id") long postId)
         {
-                try {
-                        Post post = postRepository.findById(postId);
+                //try {
+                       return postRepository.findById(postId)
+                               .map(post -> {
+                               post.setTitle(updatePost.getTitle());
+                               post.setBody(updatePost.getBody());
+                               return postRepository.save(post);
+                               });
 
-                        post.setTitle();
-                        post.setBody();
-                        return new ResponseEntity<>(updatePost, HttpStatus.OK);
 
+
+                       //return new ResponseEntity<Post>(postRepository.save(updatePost), HttpStatus.OK);
+                /*
                 } catch (HttpClientErrorException e) {
                         return ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode());
                 } catch (Exception e) {
                         return ApiErrorHandling.genericApiError(e);
                 }
-
+                */
 
 
 

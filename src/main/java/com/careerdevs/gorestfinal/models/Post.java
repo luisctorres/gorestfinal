@@ -26,11 +26,15 @@ public class Post {
         return body;
     }
 
-    public void setTitle() {
-        this.title = title;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public void setBody() {
+    public void setTitle(String title) {
+        this.title = this.title;
+    }
+
+    public void setBody(String body) {
         this.body = body;
     }
 
