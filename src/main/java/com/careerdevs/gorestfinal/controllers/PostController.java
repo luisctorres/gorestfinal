@@ -21,8 +21,10 @@ public class PostController {
         @Autowired
         PostRepository postRepository;
 
+
         @GetMapping("/all")
         public ResponseEntity<?> getAllPosts () {
+
                 try{
                 Iterable<Post> allPosts = postRepository.findAll();
                 return new ResponseEntity<>(allPosts, HttpStatus.OK);
@@ -32,15 +34,32 @@ public class PostController {
                 }
         }
 
+
+        @GetMapping("/{id}")
+        public ResponseEntity<?> getOnePost (@PathVariable long postId) {
+                //try{
+                        Optional<Post> foundPost = postRepository.findById(postId);
+                        if (foundPost.isPresent()) {
+                                return new ResponseEntity<>(foundPost.get(), HttpStatus.OK);
+                        }
+
+                //} catch (Exception e) {
+                       // return ApiErrorHandling.genericApiError(e);
+                //}
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+
+
         @PostMapping("/")
-        public ResponseEntity<?> createPost (@RequestBody Post newPost) {
+        public ResponseEntity<?> create (@RequestBody Post createPost) {
 
                 try {
-                        ValidationError errors = PostValidation.validatePost(newPost, postRepository, Boolean.FALSE);
+                        ValidationError errors = PostValidation.validatePost(createPost, postRepository, Boolean.FALSE);
                         if (errors.hasError()) {
                                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, errors.toJSONString());
                         }
-                        Post createdPost = postRepository.save(newPost);
+                        Post createdPost = postRepository.save(createPost);
                         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
 
                 } catch (HttpClientErrorException e) {
@@ -51,34 +70,40 @@ public class PostController {
 
         }
 
+
+
         @PutMapping("/{id}")
-        public Optional<Post>
-        updatePost(@RequestBody Post updatePost,
-                         @PathVariable(value = "id") long postId)
+        public ResponseEntity<?>
+        update(@PathVariable(value = "id") long postId,
+                   @RequestBody Post updatePost)
         {
                 //try {
-                       return postRepository.findById(postId)
-                               .map(post -> {
-                               post.setTitle(updatePost.getTitle());
-                               post.setBody(updatePost.getBody());
-                               return postRepository.save(post);
-                               });
+                       Optional<Post> existingPost = postRepository.findById(postId);
+                       if (existingPost.isPresent()) {
+                               Post newPostData = existingPost.get();
+                               newPostData.setTitle(updatePost.getTitle());
+                               newPostData.setBody(updatePost.getBody());
+                               return new ResponseEntity<>(newPostData, HttpStatus.OK);
+                       }
 
 
-
-                       //return new ResponseEntity<Post>(postRepository.save(updatePost), HttpStatus.OK);
                 /*
                 } catch (HttpClientErrorException e) {
-                        return ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode());
+                        return (ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode());
                 } catch (Exception e) {
-                        return ApiErrorHandling.genericApiError(e);
+                        return (ApiErrorHandling.genericApiError(e);
                 }
                 */
-
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 
         }
 
 
+
+        @DeleteMapping("/{id}")
+        void deletePost(@PathVariable Long postId) {
+                postRepository.deleteById(postId);
+        }
 
 }
