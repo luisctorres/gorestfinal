@@ -7,15 +7,16 @@ import com.careerdevs.gorestfinal.repositories.UserRepository;
 
 import java.util.Optional;
 
-public class PostValidation {
+public class UserValidation {
 
-    public static ValidationError validatePost (Post post, PostRepository postRepo, UserRepository userRepo,
+
+    public static ValidationError validateUser(User user, PostRepository postRepo, UserRepository userRepo,
                                                 boolean isUpdate) {
 
         ValidationError errors = new ValidationError();
 
         if (isUpdate) {
-            if (post.getId() == 0) {
+            if (User.getId() == 0) {
                 errors.addError("id", "ID can not be left blank");
             } else {
                 Optional<Post> foundUser = postRepo.findById(post.getId());
@@ -53,4 +54,6 @@ public class PostValidation {
         return errors;
 
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.careerdevs.gorestfinal.controllers;
 
 import com.careerdevs.gorestfinal.models.Post;
 import com.careerdevs.gorestfinal.repositories.PostRepository;
+import com.careerdevs.gorestfinal.repositories.UserRepository;
 import com.careerdevs.gorestfinal.utils.ApiErrorHandling;
 import com.careerdevs.gorestfinal.validation.PostValidation;
 import com.careerdevs.gorestfinal.validation.ValidationError;
@@ -21,6 +22,9 @@ public class PostController {
         @Autowired
         PostRepository postRepository;
 
+        @Autowired
+        UserRepository userRepository;
+
 
         @GetMapping("/all")
         public ResponseEntity<?> getAllPosts () {
@@ -37,16 +41,19 @@ public class PostController {
 
         @GetMapping("/{id}")
         public ResponseEntity<?> getOnePost (@PathVariable long postId) {
-                //try{
+                try{
                         Optional<Post> foundPost = postRepository.findById(postId);
                         if (foundPost.isPresent()) {
-                                return new ResponseEntity<>(foundPost.get(), HttpStatus.OK);
+                               return new ResponseEntity<>(foundPost.get(), HttpStatus.OK);
+                        } else {
+                                return ApiErrorHandling.customApiError("Post now with found with id " + postId, HttpStatus.NOT_FOUND);
                         }
 
-                //} catch (Exception e) {
-                       // return ApiErrorHandling.genericApiError(e);
-                //}
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+                } catch (Exception e) {
+                        return ApiErrorHandling.genericApiError(e);
+                }
+
         }
 
 
@@ -55,7 +62,7 @@ public class PostController {
         public ResponseEntity<?> create (@RequestBody Post createPost) {
 
                 try {
-                        ValidationError errors = PostValidation.validatePost(createPost, postRepository, Boolean.FALSE);
+                        ValidationError errors = PostValidation.validatePost(createPost, postRepository, userRepository, false);
                         if (errors.hasError()) {
                                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, errors.toJSONString());
                         }
@@ -72,38 +79,63 @@ public class PostController {
 
 
 
-        @PutMapping("/{id}")
+        @PutMapping("/")
         public ResponseEntity<?>
-        update(@PathVariable(value = "id") long postId,
-                   @RequestBody Post updatePost)
+        update(@RequestBody Post updatePost)
         {
-                //try {
-                       Optional<Post> existingPost = postRepository.findById(postId);
+                try {
+                        ValidationError errors = PostValidation.validatePost(updatePost, postRepository, userRepository,true);
+                        if (errors.hasError()) {
+                                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, errors.toJSONString());
+                        }
+
+
+                       Optional<Post> existingPost = postRepository.findById(updatePost.getId());
                        if (existingPost.isPresent()) {
                                Post newPostData = existingPost.get();
+                               newPostData.setUser_id(updatePost.getUser_id());
                                newPostData.setTitle(updatePost.getTitle());
                                newPostData.setBody(updatePost.getBody());
+                               postRepository.save(newPostData);
                                return new ResponseEntity<>(newPostData, HttpStatus.OK);
+                       } else {
+                               return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                        }
 
 
-                /*
                 } catch (HttpClientErrorException e) {
-                        return (ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode());
+                        return (ApiErrorHandling.customApiError(e.getMessage(), e.getStatusCode()));
                 } catch (Exception e) {
-                        return (ApiErrorHandling.genericApiError(e);
+                        return (ApiErrorHandling.genericApiError(e));
                 }
-                */
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+
 
 
         }
 
 
-
+        //delete should return the resource that was deleted
+        //get the post and store it in variable the delete it from the repository
         @DeleteMapping("/{id}")
-        void deletePost(@PathVariable Long postId) {
-                postRepository.deleteById(postId);
+        ResponseEntity<?> deletePost(@PathVariable Long postId) {
+
+                try{
+                        Optional<Post> foundPost = postRepository.findById(postId);
+                        if (foundPost.isPresent()) {
+                                postRepository.deleteById(postId);
+                                return new ResponseEntity<>(foundPost.get(), HttpStatus.OK);
+                        } else {
+                                return ApiErrorHandling.customApiError("Post now with found with id " + postId, HttpStatus.NOT_FOUND);
+                        }
+
+
+                } catch (Exception e) {
+                        return ApiErrorHandling.genericApiError(e);
+                }
+
+
+
         }
 
 }
