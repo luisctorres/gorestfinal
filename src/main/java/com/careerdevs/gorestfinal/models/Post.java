@@ -16,6 +16,10 @@ public class Post {
     @Column(length = 512)
     private String body;
 
+    public long getId() {
+        return id;
+    }
+
     public long getUser_id() {
         return user_id;
     }
@@ -24,28 +28,12 @@ public class Post {
         this.user_id = user_id;
     }
 
-    public long getId() {
-        return id;
-    }
-
     public String getTitle() {
         return title;
     }
 
     public String getBody() {
         return body;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
     }
 
     @Override
